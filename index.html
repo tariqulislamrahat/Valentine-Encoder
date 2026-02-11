@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine Encoder</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♥</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+   
+    <style>
+        :root {
+            --burgundy: #8B2635;
+            --rose: #D4979C;
+            --cream: #FAF7F5;
+            --gold: #C9A26F;
+            --charcoal: #2A2A2A;
+            --shadow: rgba(139, 38, 53, 0.1);
+        }
+       
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+       
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--cream) 0%, #FFF5F0 100%);
+            color: var(--charcoal);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+       
+        h1, h2, h3 {
+            font-family: 'Crimson Pro', serif;
+            font-weight: 600;
+        }
+       
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+       
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+       
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+       
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+       
+        /* Tab Styles */
+        .tab-container {
+            background: rgba(139, 38, 53, 0.95);
+            border-radius: 16px 16px 0 0;
+            overflow: hidden;
+        }
+       
+        .tab-buttons {
+            display: flex;
+            gap: 0;
+        }
+       
+        .tab-btn {
+            flex: 1;
+            padding: 18px 24px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            letter-spacing: 0.3px;
+        }
+       
+        .tab-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+       
+        .tab-btn.active {
+            color: white;
+        }
+       
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--rose);
+        }
+       
+        .tab-content {
+            display: none;
+        }
+       
+        .tab-content.active {
+            display: block;
+        }
+       
+        /* Card Styles */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 8px 32px var(--shadow);
+        }
+       
+        /* Input Styles */
+        textarea {
+            font-family: 'Outfit', sans-serif;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            padding: 16px;
+            width: 100%;
+            resize: vertical;
+            transition: all 0.3s ease;
+            color: var(--charcoal);
+        }
+       
+        textarea:focus {
+            outline: none;
+            border-color: var(--burgundy);
+            background: white;
+            box-shadow: 0 4px 20px rgba(139, 38, 53, 0.1);
+        }
+       
+        /* Button Styles */
+        .btn {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            padding: 14px 32px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 15px;
+            letter-spacing: 0.3px;
+        }
+       
+        .btn-primary {
+            background: linear-gradient(135deg, var(--burgundy) 0%, #A63446 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(139, 38, 53, 0.3);
+        }
+       
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(139, 38, 53, 0.4);
+        }
+       
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+       
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+       
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+       
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+       
+        /* Heart Icon */
+        .heart-icon {
+            display: inline-block;
+            color: var(--burgundy);
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+       
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+       
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+       
+        ::-webkit-scrollbar-thumb {
+            background: var(--rose);
+            border-radius: 10px;
+        }
+       
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--burgundy);
+        }
+       
+        /* Responsive */
+        @media (max-width: 768px) {
+            .modal-content {
+                padding: 30px 24px;
+            }
+           
+            .tab-btn {
+                padding: 16px 20px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+   
+    <!-- Main Container -->
+    <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+       
+        <!-- Header -->
+        <header class="max-w-4xl mx-auto text-center mb-12 fade-in">
+            <div class="mb-6">
+                <span class="heart-icon text-6xl">♥</span>
+            </div>
+            <h1 class="text-5xl sm:text-6xl lg:text-7xl mb-6" style="color: #000000;">
+                Valentine Encoder
+            </h1>
+            <p class="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                Who needs plain text when your messages can say ‘I love you’ a thousand times? Every letter becomes a love note, and your chats have never been this romantic. This Valentine’s Day, transform your messages into a thousand ‘I love yous’.
+            </p>
+        </header>
+       
+        <!-- Main Content -->
+        <div class="max-w-4xl mx-auto fade-in delay-1">
+           
+            <!-- Tab Navigation -->
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('encrypt')">Encrypt</button>
+                    <button class="tab-btn" onclick="switchTab('decrypt')">Decrypt</button>
+                </div>
+            </div>
+           
+            <!-- Tab Content Container -->
+            <div class="glass-card p-6 sm:p-8">
+               
+                <!-- Encrypt Tab -->
+                <div id="encryptTab" class="tab-content active">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2 text-gray-700">Your Message</label>
+                            <textarea
+                                id="plaintext"
+                                rows="5"
+                                placeholder="Type your message here..."
+                                oninput="encrypt()"
+                                class="min-h-[140px]"
+                            ></textarea>
+                        </div>
+                       
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-medium text-gray-700">Encrypted Output</label>
+                                <button onclick="copyEncrypted()" class="text-sm hover:underline" style="color: var(--burgundy);">
+                                    Copy
+                                </button>
+                            </div>
+                            <textarea
+                                id="encrypted"
+                                rows="7"
+                                readonly
+                                placeholder="Your encrypted message will appear here..."
+                                class="min-h-[180px] bg-gray-50 cursor-text"
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+               
+                <!-- Decrypt Tab -->
+                <div id="decryptTab" class="tab-content">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2 text-gray-700">Encode Message</label>
+                            <textarea
+                                id="encryptedInput"
+                                rows="7"
+                                placeholder="Paste encrypted message here..."
+                                oninput="decrypt()"
+                                class="min-h-[180px]"
+                            ></textarea>
+                        </div>
+                       
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-medium text-gray-700">Decode Message</label>
+                                <button onclick="copyDecrypted()" class="text-sm hover:underline" style="color: var(--burgundy);">
+                                    Copy
+                                </button>
+                            </div>
+                            <textarea
+                                id="decrypted"
+                                rows="5"
+                                readonly
+                                placeholder="Decrypted message will appear here..."
+                                class="min-h-[140px] bg-gray-50 cursor-text"
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+               
+            </div>
+           
+        </div>
+       
+        <!-- Footer -->
+        <footer class="max-w-4xl mx-auto mt-16 text-center fade-in delay-2">
+            <button onclick="showCredits()" class="text-sm text-[#90313E] hover:text-burgundy transition-colors duration-300" style="--burgundy: #8B2635;">
+                View Credits
+            </button>
+            <p class="text-xs text-gray-400 mt-4">
+                © 2026 Valentine Encoder
+            </p>
+        </footer>
+       
+    </div>
+   
+    <!-- Credits Modal -->
+    <div id="creditsModal" class="modal-overlay" onclick="closeModal('creditsModal')">
+        <div class="modal-content text-center" onclick="event.stopPropagation()">
+            <h2 class="text-3xl mb-6" style="color: var(--burgundy); font-family: 'Crimson Pro', serif;">Credits</h2>
+            <div class="space-y-4">
+                <div class="p-4 bg-gray-50 rounded-xl">
+                    <h3 class="font-semibold mb-1" style="color: var(--burgundy);">Tariqul Islam</h3>
+                    <p class="text-sm text-gray-600 mb-2">Idea & Concept</p>
+                    <a href="https://github.com/tariqul-islam" target="_blank" class="text-sm hover:underline" style="color: var(--burgundy);">
+                        Visit GitHub
+                    </a>
+                </div>
+               
+                <div class="p-4 bg-gray-50 rounded-xl">
+                    <h3 class="font-semibold mb-1" style="color: var(--burgundy);">Grok</h3>
+                    <p class="text-sm text-gray-600 mb-2">Coding Implementation</p>
+                    <a href="https://x.com/i/grok" target="_blank" class="text-sm hover:underline" style="color: var(--burgundy);">
+                        Visit Grok
+                    </a>
+                </div>
+               
+                <div class="p-4 bg-gray-50 rounded-xl">
+                    <h3 class="font-semibold mb-1" style="color: var(--burgundy);">Claude Sonnet 4.5</h3>
+                    <p class="text-sm text-gray-600 mb-2">UI Design</p>
+                    <a href="https://claude.ai" target="_blank" class="text-sm hover:underline" style="color: var(--burgundy);">
+                        Visit Claude
+                    </a>
+                </div>
+            </div>
+            <button onclick="closeModal('creditsModal')" class="btn btn-primary w-full mt-6">Close</button>
+        </div>
+    </div>
+   
+    <script>
+        // Tab Switching
+        function switchTab(tabName) {
+            // Update buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+           
+            // Update content
+            document.getElementById('encryptTab').classList.remove('active');
+            document.getElementById('decryptTab').classList.remove('active');
+           
+            if (tabName === 'encrypt') {
+                document.getElementById('encryptTab').classList.add('active');
+            } else {
+                document.getElementById('decryptTab').classList.add('active');
+            }
+        }
+       
+        // FIXED ENCRYPTION/DECRYPTION ALGORITHM
+        // Simple approach: Each "I love you" block = 8 bits = 1 character
+        // Each letter case represents 1 bit: Uppercase = 0, Lowercase = 1
+       
+        function charToBinary(char) {
+            return char.charCodeAt(0).toString(2).padStart(8, '0');
+        }
+       
+        function binaryToChar(binary) {
+            return String.fromCharCode(parseInt(binary, 2));
+        }
+       
+        function encodeBlockToILoveYou(binary8) {
+            // 8 bits -> 8 letters in "iloveyou"
+            const letters = ['i', 'l', 'o', 'v', 'e', 'y', 'o', 'u'];
+            let result = '';
+           
+            for (let i = 0; i < 8; i++) {
+                const bit = binary8.charAt(i);
+                const letter = letters[i];
+               
+                // 0 = uppercase, 1 = lowercase
+                result += (bit === '0') ? letter.toUpperCase() : letter.toLowerCase();
+            }
+           
+            // Format as "I love you" with proper spacing
+            return result.charAt(0) + ' ' + result.substr(1, 4) + ' ' + result.substr(5);
+        }
+       
+        function encrypt() {
+            const plaintext = document.getElementById('plaintext').value;
+            if (!plaintext) {
+                document.getElementById('encrypted').value = '';
+                return;
+            }
+           
+            // Convert each character to an "I love you" block
+            const blocks = [];
+           
+            for (let char of plaintext) {
+                const binary = charToBinary(char);
+                const block = encodeBlockToILoveYou(binary);
+                blocks.push(block);
+            }
+           
+            // Join blocks with space
+            const encrypted = blocks.join(' ');
+            document.getElementById('encrypted').value = encrypted;
+        }
+       
+        function decrypt() {
+            const encryptedInput = document.getElementById('encryptedInput').value.trim();
+            if (!encryptedInput) {
+                document.getElementById('decrypted').value = '';
+                return;
+            }
+           
+            try {
+                // Remove all spaces to get continuous string with original cases
+                const casedString = encryptedInput.replace(/\s/g, '');
+               
+                // Check if length is multiple of 8
+                if (casedString.length % 8 !== 0) {
+                    throw new Error('Invalid encrypted message length');
+                }
+               
+                // Check if the lowercase version is 'iloveyou' repeated
+                const lowerString = casedString.toLowerCase();
+                for (let i = 0; i < lowerString.length; i += 8) {
+                    if (lowerString.substr(i, 8) !== 'iloveyou') {
+                        throw new Error('Invalid encrypted message pattern');
+                    }
+                }
+               
+                let decrypted = '';
+               
+                // Decode each 8-letter chunk
+                for (let i = 0; i < casedString.length; i += 8) {
+                    const chunk = casedString.substr(i, 8);
+                    let binary = '';
+                   
+                    for (let j = 0; j < 8; j++) {
+                        const char = chunk.charAt(j);
+                        const isUpper = char === char.toUpperCase();
+                        binary += isUpper ? '0' : '1';
+                    }
+                   
+                    decrypted += binaryToChar(binary);
+                }
+               
+                document.getElementById('decrypted').value = decrypted;
+            } catch (error) {
+                document.getElementById('decrypted').value = '';
+            }
+        }
+       
+        // Copy functions
+        function copyEncrypted() {
+            const encrypted = document.getElementById('encrypted');
+            encrypted.select();
+            document.execCommand('copy');
+            showToast('Encrypted message copied!');
+        }
+       
+        function copyDecrypted() {
+            const decrypted = document.getElementById('decrypted');
+            decrypted.select();
+            document.execCommand('copy');
+            showToast('Decrypted message copied!');
+        }
+       
+        // Modal functions
+        function showCredits() {
+            document.getElementById('creditsModal').classList.add('active');
+        }
+       
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+       
+        // Toast notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                background: var(--burgundy);
+                color: white;
+                padding: 16px 24px;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                z-index: 10000;
+                font-family: 'Outfit', sans-serif;
+                font-size: 14px;
+                animation: fadeInUp 0.3s ease-out;
+            `;
+           
+            document.body.appendChild(toast);
+           
+            setTimeout(() => {
+                toast.style.animation = 'fadeInUp 0.3s ease-out reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+       
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal('creditsModal');
+            }
+        });
+    </script>
+   
+</body>
+</html>
