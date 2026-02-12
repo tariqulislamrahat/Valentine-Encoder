@@ -217,7 +217,7 @@
                 Valentine Encoder
             </h1>
             <p class="text-xs sm:text-sm md:text-base text-gray-600 max-w-2xl mx-auto leading-normal">
-                Who needs plain text when your messages can say 'I love you' a thousand times? Every letter becomes a love note, and your chats have never been this romantic. This Valentine's Day, transform your messages into a thousand 'I love yous'.
+                Who needs plain text when your messages can say ‘I love you’ a thousand times? Every letter becomes a love note, and your chats have never been this romantic. This Valentine’s Day, transform your messages into a thousand ‘I love yous’.
             </p>
         </header>
 
@@ -348,6 +348,32 @@
         </div>
     </div>
     <script>
+        let mappings = {};
+        try {
+            mappings = JSON.parse(localStorage.getItem('valentineMappings') || '{}');
+        } catch (e) {}
+
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash >>> 0;
+        }
+
+        function generateShortID(text) {
+            const words = text.trim().split(/\s+/).filter(w => w);
+            let initials = words.map(w => w[0] ? w[0].toUpperCase() : '').join('').slice(0, 2);
+            while (initials.length < 2) initials += 'X';
+            const lenStr = text.length.toString().padStart(2, '0');
+            const hash = simpleHash(text);
+            const checkNum = hash % (36 ** 2);
+            const checkStr = checkNum.toString(36).toUpperCase().padStart(2, '0');
+            return initials + lenStr + checkStr;
+        }
+
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
@@ -378,14 +404,27 @@
         }
 
         function encrypt() {
-            const plaintext = document.getElementById('plaintext').value;
+            const plaintext = document.getElementById('plaintext').value.trim();
             if (!plaintext) {
                 document.getElementById('encrypted').value = '';
                 return;
             }
 
+            let shortId = Object.keys(mappings).find(key => mappings[key] === plaintext);
+            if (!shortId) {
+                shortId = generateShortID(plaintext);
+                let baseId = shortId;
+                let counter = 1;
+                while (mappings[shortId] && mappings[shortId] !== plaintext) {
+                    shortId = baseId + counter.toString(36).toUpperCase();
+                    counter++;
+                }
+                mappings[shortId] = plaintext;
+                localStorage.setItem('valentineMappings', JSON.stringify(mappings));
+            }
+
             const blocks = [];
-            for (let char of plaintext) {
+            for (let char of shortId) {
                 const binary = charToBinary(char);
                 blocks.push(encodeBlockToILoveYou(binary));
             }
@@ -419,9 +458,15 @@
                     result += binaryToChar(bin);
                 }
 
-                document.getElementById('decrypted').value = result;
+                const id = result;
+                const original = mappings[id];
+                if (original) {
+                    document.getElementById('decrypted').value = original;
+                } else {
+                    document.getElementById('decrypted').value = 'Mapping not found for this message. Decoded ID: ' + id;
+                }
             } catch (e) {
-                document.getElementById('decrypted').value = 'Invalid love-ified message.';
+                document.getElementById('decrypted').value = '';
             }
         }
 
@@ -443,6 +488,7 @@
             showToast('Original message copied!');
         }
 
+        // --- REWRITE OF generateShareableLink() STARTS HERE ---
         async function generateShareableLink() {
             const output = document.getElementById('encrypted').value.trim();
             if (!output) {
@@ -450,20 +496,30 @@
                 return;
             }
 
-            // FIX 1: Properly handle URL encoding for the compressed string
             const compressed = LZString.compressToEncodedURIComponent(output);
-            // FIX 2: Use proper URL construction
-            const baseUrl = window.location.origin + window.location.pathname;
-            const shareUrl = baseUrl + '#m=' + compressed;
+            const shareUrl = window.location.origin + window.location.pathname + '#m=' + compressed;
 
-            const shareText = 'Check out this love-ified message!\n\n' + shareUrl;
+            let finalUrl = shareUrl;
+            try {
+                const response = await fetch('http://tinyurl.com/api-create.php?url=' + encodeURIComponent(shareUrl));
+                if (response.ok) {
+                    finalUrl = await response.text();
+                } else {
+                    throw new Error('Failed to shorten');
+                }
+            } catch (err) {
+                console.error('Shortening failed:', err);
+            }
+
+      
+            const shareText = 'Check out this love-ified message!\n\n' + finalUrl;
 
             if (navigator.share) {
                 try {
                     await navigator.share({
                         title: 'Valentine Encoder Message',
                         text: 'Check out this love-ified message!\n\n',
-                        url: shareUrl
+                        url: finalUrl
                     });
                     showToast('Shared successfully!');
                 } catch (shareErr) {
@@ -473,29 +529,24 @@
                 }
             } else {
                 navigator.clipboard.writeText(shareText);
-                showToast('Shareable link copied!');
+                showToast(finalUrl === shareUrl ? 'Shareable link copied (shortening failed)' : 'Short link copied!');
             }
         }
+        // --- REWRITE OF generateShareableLink() ENDS HERE ---
 
         function loadFromUrl() {
-            // FIX 3: Properly handle URL fragment parameters
             const hash = window.location.hash;
-            if (!hash || !hash.startsWith('#m=')) return;
+            if (!hash) return;
 
-            try {
-                // Extract the parameter value directly
-                const msg = hash.substring(3);
-                if (!msg) return;
-
+            const params = new URLSearchParams(hash.slice(1));
+            const msg = params.get('m');
+            if (msg) {
                 const decoded = LZString.decompressFromEncodedURIComponent(msg);
                 if (decoded) {
                     document.getElementById('encryptedInput').value = decoded;
                     decrypt();
                     switchTab('decrypt');
                 }
-            } catch (e) {
-                console.error('Failed to load from URL:', e);
-                showToast('Failed to load message from URL');
             }
         }
 
@@ -529,8 +580,6 @@
             if (e.key === 'Escape') closeModal('creditsModal');
         });
 
-        // FIX 4: Handle hash changes after page load
-        window.addEventListener('hashchange', loadFromUrl);
         document.addEventListener('DOMContentLoaded', loadFromUrl);
     </script>
 </body>
