@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
     <style>
         :root {
             --burgundy: #8B2635;
@@ -224,8 +225,8 @@
         
             <div class="tab-container">
                 <div class="tab-buttons">
-                    <button class="tab-btn active" onclick="switchTab('encrypt')">Love-ify</button>
-                    <button class="tab-btn" onclick="switchTab('decrypt')">De-Love-ify</button>
+                    <button class="tab-btn active" data-tab="encrypt" onclick="switchTab('encrypt')">Love-ify</button>
+                    <button class="tab-btn" data-tab="decrypt" onclick="switchTab('decrypt')">De-Love-ify</button>
                 </div>
             </div>
         
@@ -248,8 +249,8 @@
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-sm font-medium text-gray-700">Love-ified Output</label>
-                                <button onclick="copyEncrypted()" class="text-sm hover:underline" style="color: var(--burgundy);">
-                                    Copy
+                                <button onclick="generateShareableLink()" class="text-sm hover:underline" style="color: var(--burgundy);">
+                                    Share
                                 </button>
                             </div>
                             <textarea
@@ -370,11 +371,9 @@
 
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-        
-            document.getElementById('encryptTab').classList.remove('active');
-            document.getElementById('decryptTab').classList.remove('active');
-        
+            const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+            if (btn) btn.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById(tabName + 'Tab').classList.add('active');
         }
     
@@ -480,6 +479,47 @@
             showToast('Original message copied!');
         }
     
+        async function generateShareableLink() {
+            const output = document.getElementById('encrypted').value.trim();
+            if (!output) {
+                showToast('Nothing to share!');
+                return;
+            }
+
+            const compressed = LZString.compressToEncodedURIComponent(output);
+            const shareUrl = window.location.origin + window.location.pathname + '#m=' + compressed;
+
+            try {
+                const response = await fetch('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(shareUrl));
+                if (response.ok) {
+                    const shortUrl = await response.text();
+                    navigator.clipboard.writeText(shortUrl);
+                    showToast('Short link copied!');
+                } else {
+                    throw new Error('Failed to shorten');
+                }
+            } catch (err) {
+                navigator.clipboard.writeText(shareUrl);
+                showToast('Shareable link copied (shortening failed)');
+            }
+        }
+    
+        function loadFromUrl() {
+            const hash = window.location.hash;
+            if (!hash) return;
+
+            const params = new URLSearchParams(hash.slice(1));
+            const msg = params.get('m');
+            if (msg) {
+                const decoded = LZString.decompressFromEncodedURIComponent(msg);
+                if (decoded) {
+                    document.getElementById('encryptedInput').value = decoded;
+                    decrypt();
+                    switchTab('decrypt');
+                }
+            }
+        }
+    
         function showCredits() {
             document.getElementById('creditsModal').classList.add('active');
         }
@@ -509,6 +549,8 @@
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') closeModal('creditsModal');
         });
+
+        document.addEventListener('DOMContentLoaded', loadFromUrl);
     </script>
 </body>
 </html>
