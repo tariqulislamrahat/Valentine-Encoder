@@ -488,7 +488,7 @@
             showToast('Original message copied!');
         }
 
-        // --- REWRITE OF generateShareableLink() STARTS HERE ---
+        // --- UPDATED generateShareableLink() STARTS HERE ---
         async function generateShareableLink() {
             const output = document.getElementById('encrypted').value.trim();
             if (!output) {
@@ -499,27 +499,14 @@
             const compressed = LZString.compressToEncodedURIComponent(output);
             const shareUrl = window.location.origin + window.location.pathname + '#m=' + compressed;
 
-            let finalUrl = shareUrl;
-            try {
-                const response = await fetch('http://tinyurl.com/api-create.php?url=' + encodeURIComponent(shareUrl));
-                if (response.ok) {
-                    finalUrl = await response.text();
-                } else {
-                    throw new Error('Failed to shorten');
-                }
-            } catch (err) {
-                console.error('Shortening failed:', err);
-            }
-
-      
-            const shareText = 'Check out this love-ified message!\n\n' + finalUrl;
+            const shareText = 'Check out this love-ified message!\n\n' + shareUrl;
 
             if (navigator.share) {
                 try {
                     await navigator.share({
                         title: 'Valentine Encoder Message',
                         text: 'Check out this love-ified message!\n\n',
-                        url: finalUrl
+                        url: shareUrl
                     });
                     showToast('Shared successfully!');
                 } catch (shareErr) {
@@ -529,10 +516,10 @@
                 }
             } else {
                 navigator.clipboard.writeText(shareText);
-                showToast(finalUrl === shareUrl ? 'Shareable link copied (shortening failed)' : 'Short link copied!');
+                showToast('Shareable link copied!');
             }
         }
-        // --- REWRITE OF generateShareableLink() ENDS HERE ---
+        // --- UPDATED generateShareableLink() ENDS HERE ---
 
         function loadFromUrl() {
             const hash = window.location.hash;
