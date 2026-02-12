@@ -306,7 +306,7 @@
                                 id="encryptedInput"
                                 rows="7"
                                 placeholder="Paste love-ified message here..."
-                                oninput="decrypt()"
+                                oninput="attemptDecrypt()"
                                 class="min-h-[180px]"
                             ></textarea>
                         </div>
@@ -318,7 +318,7 @@
                                 type="text"
                                 placeholder="Enter key here..."
                                 class="w-full p-4 border-2 border-transparent rounded-lg bg-white focus:border-var(--burgundy) transition-all"
-                                oninput="manualDecrypt()"
+                                oninput="attemptDecrypt()"
                             />
                         </div>
                    
@@ -336,9 +336,6 @@
                                 oncut="return false"
                                 oncontextmenu="return false"
                             ></textarea>
-                            <div id="decodedKeyDisplay" class="mt-2 text-sm text-gray-700 hidden">
-                                Decoded Key: <span id="decodedKeyValue"></span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -482,23 +479,21 @@
             showToast('Love-ified message and key copied!');
         }
    
-        function decrypt() {
-            document.getElementById('decodedKeyDisplay').classList.add('hidden');
-            const input = document.getElementById('encryptedInput').value.trim();
-            if (!input) {
-                document.getElementById('decrypted').value = '';
+        function attemptDecrypt() {
+            const encoded = document.getElementById('encryptedInput').value.trim();
+            const enteredKey = document.getElementById('manualKey').value.trim();
+            const decryptedElem = document.getElementById('decrypted');
+            if (!encoded || !enteredKey) {
+                decryptedElem.value = '';
                 return;
             }
-       
             try {
-                const cased = input.replace(/\s/g, '');
+                const cased = encoded.replace(/\s/g, '');
                 if (cased.length % 8 !== 0) throw new Error('Invalid length');
-           
                 const lower = cased.toLowerCase();
                 for (let i = 0; i < lower.length; i += 8) {
                     if (lower.substr(i,8) !== 'iloveyou') throw new Error('Invalid pattern');
                 }
-           
                 let result = '';
                 for (let i = 0; i < cased.length; i += 8) {
                     const chunk = cased.substr(i,8);
@@ -508,34 +503,21 @@
                     }
                     result += binaryToChar(bin);
                 }
-                const id = result;
-                const original = mappings[id];
-                if (original) {
-                    document.getElementById('decrypted').value = original;
-                    document.getElementById('decodedKeyValue').textContent = id;
-                    document.getElementById('decodedKeyDisplay').classList.remove('hidden');
+                const computedKey = result;
+                if (computedKey === enteredKey) {
+                    const original = mappings[enteredKey];
+                    if (original) {
+                        decryptedElem.value = original;
+                    } else {
+                        decryptedElem.value = 'No message found for this key.';
+                    }
                 } else {
-                    document.getElementById('decrypted').value = 'Mapping not found for this message. Decoded ID: ' + id;
+                    decryptedElem.value = 'Key does not match the encoded message.';
+                    decryptedElem.classList.add('animate-shake');
+                    setTimeout(() => decryptedElem.classList.remove('animate-shake'), 500);
                 }
             } catch (e) {
-                document.getElementById('decrypted').value = '';
-            }
-        }
-
-        function manualDecrypt() {
-            document.getElementById('decodedKeyDisplay').classList.add('hidden');
-            const key = document.getElementById('manualKey').value.trim();
-            if (!key) {
-                document.getElementById('decrypted').value = '';
-                return;
-            }
-            const original = mappings[key];
-            if (original) {
-                document.getElementById('decrypted').value = original;
-                document.getElementById('decodedKeyValue').textContent = key;
-                document.getElementById('decodedKeyDisplay').classList.remove('hidden');
-            } else {
-                document.getElementById('decrypted').value = 'No message found for this key.';
+                decryptedElem.value = 'Invalid encoded message.';
             }
         }
    
@@ -613,7 +595,8 @@
                         mappings[id] = plain;
                         localStorage.setItem('valentineMappings', JSON.stringify(mappings));
                         document.getElementById('encryptedInput').value = encoded;
-                        decrypt();
+                        document.getElementById('manualKey').value = id;
+                        attemptDecrypt();
                         switchTab('decrypt');
                     } catch (e) {
                         console.error('Failed to process shared link');
