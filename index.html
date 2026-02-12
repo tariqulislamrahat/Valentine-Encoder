@@ -217,7 +217,7 @@
                 Valentine Encoder
             </h1>
             <p class="text-xs sm:text-sm md:text-base text-gray-600 max-w-2xl mx-auto leading-normal">
-                Who needs plain text when your messages can say ‘I love you’ a thousand times? Every letter becomes a love note, and your chats have never been this romantic. This Valentine’s Day, transform your messages into a thousand ‘I love yous’.
+                Who needs plain text when your messages can say 'I love you' a thousand times? Every letter becomes a love note, and your chats have never been this romantic. This Valentine's Day, transform your messages into a thousand 'I love yous'.
             </p>
         </header>
 
@@ -450,8 +450,11 @@
                 return;
             }
 
+            // FIX 1: Properly handle URL encoding for the compressed string
             const compressed = LZString.compressToEncodedURIComponent(output);
-            const shareUrl = window.location.origin + window.location.pathname + '#m=' + compressed;
+            // FIX 2: Use proper URL construction
+            const baseUrl = window.location.origin + window.location.pathname;
+            const shareUrl = baseUrl + '#m=' + compressed;
 
             const shareText = 'Check out this love-ified message!\n\n' + shareUrl;
 
@@ -475,18 +478,24 @@
         }
 
         function loadFromUrl() {
+            // FIX 3: Properly handle URL fragment parameters
             const hash = window.location.hash;
-            if (!hash) return;
+            if (!hash || !hash.startsWith('#m=')) return;
 
-            const params = new URLSearchParams(hash.slice(1));
-            const msg = params.get('m');
-            if (msg) {
+            try {
+                // Extract the parameter value directly
+                const msg = hash.substring(3);
+                if (!msg) return;
+
                 const decoded = LZString.decompressFromEncodedURIComponent(msg);
                 if (decoded) {
                     document.getElementById('encryptedInput').value = decoded;
                     decrypt();
                     switchTab('decrypt');
                 }
+            } catch (e) {
+                console.error('Failed to load from URL:', e);
+                showToast('Failed to load message from URL');
             }
         }
 
@@ -520,6 +529,8 @@
             if (e.key === 'Escape') closeModal('creditsModal');
         });
 
+        // FIX 4: Handle hash changes after page load
+        window.addEventListener('hashchange', loadFromUrl);
         document.addEventListener('DOMContentLoaded', loadFromUrl);
     </script>
 </body>
