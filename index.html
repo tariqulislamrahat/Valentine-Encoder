@@ -348,32 +348,6 @@
         </div>
     </div>
     <script>
-        let mappings = {};
-        try {
-            mappings = JSON.parse(localStorage.getItem('valentineMappings') || '{}');
-        } catch (e) {}
-
-        function simpleHash(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-            return hash >>> 0;
-        }
-
-        function generateShortID(text) {
-            const words = text.trim().split(/\s+/).filter(w => w);
-            let initials = words.map(w => w[0] ? w[0].toUpperCase() : '').join('').slice(0, 2);
-            while (initials.length < 2) initials += 'X';
-            const lenStr = text.length.toString().padStart(2, '0');
-            const hash = simpleHash(text);
-            const checkNum = hash % (36 ** 2);
-            const checkStr = checkNum.toString(36).toUpperCase().padStart(2, '0');
-            return initials + lenStr + checkStr;
-        }
-
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
@@ -404,27 +378,14 @@
         }
 
         function encrypt() {
-            const plaintext = document.getElementById('plaintext').value.trim();
+            const plaintext = document.getElementById('plaintext').value;
             if (!plaintext) {
                 document.getElementById('encrypted').value = '';
                 return;
             }
 
-            let shortId = Object.keys(mappings).find(key => mappings[key] === plaintext);
-            if (!shortId) {
-                shortId = generateShortID(plaintext);
-                let baseId = shortId;
-                let counter = 1;
-                while (mappings[shortId] && mappings[shortId] !== plaintext) {
-                    shortId = baseId + counter.toString(36).toUpperCase();
-                    counter++;
-                }
-                mappings[shortId] = plaintext;
-                localStorage.setItem('valentineMappings', JSON.stringify(mappings));
-            }
-
             const blocks = [];
-            for (let char of shortId) {
+            for (let char of plaintext) {
                 const binary = charToBinary(char);
                 blocks.push(encodeBlockToILoveYou(binary));
             }
@@ -458,15 +419,9 @@
                     result += binaryToChar(bin);
                 }
 
-                const id = result;
-                const original = mappings[id];
-                if (original) {
-                    document.getElementById('decrypted').value = original;
-                } else {
-                    document.getElementById('decrypted').value = 'Mapping not found for this message. Decoded ID: ' + id;
-                }
+                document.getElementById('decrypted').value = result;
             } catch (e) {
-                document.getElementById('decrypted').value = '';
+                document.getElementById('decrypted').value = 'Invalid love-ified message.';
             }
         }
 
@@ -488,7 +443,6 @@
             showToast('Original message copied!');
         }
 
-        // --- UPDATED generateShareableLink() STARTS HERE ---
         async function generateShareableLink() {
             const output = document.getElementById('encrypted').value.trim();
             if (!output) {
@@ -519,7 +473,6 @@
                 showToast('Shareable link copied!');
             }
         }
-        // --- UPDATED generateShareableLink() ENDS HERE ---
 
         function loadFromUrl() {
             const hash = window.location.hash;
