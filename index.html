@@ -275,6 +275,9 @@
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-sm font-medium text-gray-700">Love-ified Output</label>
                                 <div class="flex gap-4">
+                                    <button onclick="copyEncrypted()" class="text-sm hover:underline" style="color: var(--burgundy);">
+                                        Copy
+                                    </button>
                                     <button id="shareBtn" onclick="generateShareableLink()" class="text-sm hover:underline" style="color: var(--burgundy);">
                                         Share
                                     </button>
@@ -307,6 +310,17 @@
                                 class="min-h-[180px]"
                             ></textarea>
                         </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2 text-gray-700">Or Enter Key Manually</label>
+                            <input
+                                id="manualKey"
+                                type="text"
+                                placeholder="Enter key here..."
+                                class="w-full p-4 border-2 border-transparent rounded-lg bg-white focus:border-var(--burgundy) transition-all"
+                                oninput="manualDecrypt()"
+                            />
+                        </div>
                    
                         <div>
                             <div class="flex items-center justify-between mb-2">
@@ -322,6 +336,9 @@
                                 oncut="return false"
                                 oncontextmenu="return false"
                             ></textarea>
+                            <div id="decodedKeyDisplay" class="mt-2 text-sm text-gray-700 hidden">
+                                Decoded Key: <span id="decodedKeyValue"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -377,6 +394,7 @@
         try {
             mappings = JSON.parse(localStorage.getItem('valentineMappings') || '{}');
         } catch (e) {}
+        let currentShortId = '';
         function simpleHash(str) {
             let hash = 0;
             for (let i = 0; i < str.length; i++) {
@@ -443,6 +461,7 @@
                 mappings[shortId] = plaintext;
                 localStorage.setItem('valentineMappings', JSON.stringify(mappings));
             }
+            currentShortId = shortId;
             const blocks = [];
             for (let char of shortId) {
                 const binary = charToBinary(char);
@@ -450,17 +469,21 @@
             }
        
             document.getElementById('encrypted').value = blocks.join('\n');
-
-            if (document.getElementById('encrypted').value) {
-                const shareBtn = document.getElementById('shareBtn');
-                shareBtn.classList.add('animate-shake');
-                setTimeout(() => {
-                    shareBtn.classList.remove('animate-shake');
-                }, 500);
+        }
+   
+        function copyEncrypted() {
+            const output = document.getElementById('encrypted').value.trim();
+            if (!output) {
+                showToast('Nothing to copy!');
+                return;
             }
+            const toCopy = output + '\n\nKey: ' + currentShortId;
+            navigator.clipboard.writeText(toCopy);
+            showToast('Love-ified message and key copied!');
         }
    
         function decrypt() {
+            document.getElementById('decodedKeyDisplay').classList.add('hidden');
             const input = document.getElementById('encryptedInput').value.trim();
             if (!input) {
                 document.getElementById('decrypted').value = '';
@@ -489,11 +512,30 @@
                 const original = mappings[id];
                 if (original) {
                     document.getElementById('decrypted').value = original;
+                    document.getElementById('decodedKeyValue').textContent = id;
+                    document.getElementById('decodedKeyDisplay').classList.remove('hidden');
                 } else {
                     document.getElementById('decrypted').value = 'Mapping not found for this message. Decoded ID: ' + id;
                 }
             } catch (e) {
                 document.getElementById('decrypted').value = '';
+            }
+        }
+
+        function manualDecrypt() {
+            document.getElementById('decodedKeyDisplay').classList.add('hidden');
+            const key = document.getElementById('manualKey').value.trim();
+            if (!key) {
+                document.getElementById('decrypted').value = '';
+                return;
+            }
+            const original = mappings[key];
+            if (original) {
+                document.getElementById('decrypted').value = original;
+                document.getElementById('decodedKeyValue').textContent = key;
+                document.getElementById('decodedKeyDisplay').classList.remove('hidden');
+            } else {
+                document.getElementById('decrypted').value = 'No message found for this key.';
             }
         }
    
@@ -522,12 +564,11 @@
             } catch (err) {
                 console.error('Shortening failed:', err);
             }
-            const shareText = 'Check out this love-ified message! ' + finalUrl;
+            const shareText = finalUrl;
             if (navigator.share) {
                 try {
                     await navigator.share({
                         title: 'Valentine Encoder Message',
-                        text: 'Check out this love-ified message! ',
                         url: finalUrl
                     });
                     showToast('Shared successfully!');
