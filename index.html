@@ -249,9 +249,14 @@
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-sm font-medium text-gray-700">Love-ified Output</label>
-                                <button onclick="generateShareableLink()" class="text-sm hover:underline" style="color: var(--burgundy);">
-                                    Share
-                                </button>
+                                <div class="flex gap-4">
+                                    <button onclick="copyEncrypted()" class="text-sm hover:underline" style="color: var(--burgundy);">
+                                        Copy
+                                    </button>
+                                    <button onclick="generateShareableLink()" class="text-sm hover:underline" style="color: var(--burgundy);">
+                                        Share
+                                    </button>
+                                </div>
                             </div>
                             <textarea
                                 id="encrypted"
@@ -466,9 +471,13 @@
         }
     
         function copyEncrypted() {
-            const el = document.getElementById('encrypted');
-            el.select();
-            document.execCommand('copy');
+            const output = document.getElementById('encrypted').value.trim();
+            if (!output) {
+                showToast('Nothing to copy!');
+                return;
+            }
+            const toCopy = output + '\n\nDe-Love-ify here: https://t.ly/Kyyk6';
+            navigator.clipboard.writeText(toCopy);
             showToast('Love-ified message copied!');
         }
     
@@ -489,18 +498,36 @@
             const compressed = LZString.compressToEncodedURIComponent(output);
             const shareUrl = window.location.origin + window.location.pathname + '#m=' + compressed;
 
+            let finalUrl = shareUrl;
             try {
-                const response = await fetch('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(shareUrl));
+                const response = await fetch('http://tinyurl.com/api-create.php?url=' + encodeURIComponent(shareUrl));
                 if (response.ok) {
-                    const shortUrl = await response.text();
-                    navigator.clipboard.writeText(shortUrl);
-                    showToast('Short link copied!');
+                    finalUrl = await response.text();
                 } else {
                     throw new Error('Failed to shorten');
                 }
             } catch (err) {
-                navigator.clipboard.writeText(shareUrl);
-                showToast('Shareable link copied (shortening failed)');
+                console.error('Shortening failed:', err);
+            }
+
+            const shareText = 'Check out this love-ified message! ' + finalUrl;
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Valentine Encoder Message',
+                        text: 'Check out this love-ified message! ',
+                        url: finalUrl
+                    });
+                    showToast('Shared successfully!');
+                } catch (shareErr) {
+                    console.error('Share failed:', shareErr);
+                    navigator.clipboard.writeText(shareText);
+                    showToast('Link copied (share failed)');
+                }
+            } else {
+                navigator.clipboard.writeText(shareText);
+                showToast(finalUrl === shareUrl ? 'Shareable link copied (shortening failed)' : 'Short link copied!');
             }
         }
     
