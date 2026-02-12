@@ -19,13 +19,13 @@
             --charcoal: #2A2A2A;
             --shadow: rgba(139, 38, 53, 0.1);
         }
-    
+   
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-    
+   
         body {
             font-family: 'Outfit', sans-serif;
             background: linear-gradient(135deg, var(--cream) 0%, #FFF5F0 100%);
@@ -33,35 +33,49 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
-    
+   
         h1, h2, h3 {
             font-family: 'Crimson Pro', serif;
             font-weight: 600;
         }
-    
+   
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
-    
+   
         @keyframes heartbeat {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
-    
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            10% { transform: translateX(-10px); }
+            20% { transform: translateX(10px); }
+            30% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            50% { transform: translateX(-10px); }
+            60% { transform: translateX(10px); }
+            70% { transform: translateX(-10px); }
+            80% { transform: translateX(10px); }
+            90% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+   
         .fade-in { animation: fadeInUp 0.8s ease-out forwards; }
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
-    
+   
         .tab-container {
             background: rgba(139, 38, 53, 0.95);
             border-radius: 16px 16px 0 0;
             overflow: hidden;
         }
-    
+   
         .tab-buttons { display: flex; gap: 0; }
-    
+   
         .tab-btn {
             flex: 1;
             padding: 18px 24px;
@@ -76,7 +90,7 @@
             position: relative;
             letter-spacing: 0.3px;
         }
-    
+   
         .tab-btn:hover { color: white; background: rgba(255,255,255,0.1); }
         .tab-btn.active { color: white; }
         .tab-btn.active::after {
@@ -86,10 +100,10 @@
             height: 3px;
             background: var(--rose);
         }
-    
+   
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-    
+   
         .glass-card {
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -97,7 +111,7 @@
             border-radius: 0 0 24px 24px;
             box-shadow: 0 8px 32px var(--shadow);
         }
-    
+   
         textarea {
             font-family: 'Outfit', sans-serif;
             background: rgba(255,255,255,0.9);
@@ -109,14 +123,14 @@
             transition: all 0.3s ease;
             color: var(--charcoal);
         }
-    
+   
         textarea:focus {
             outline: none;
             border-color: var(--burgundy);
             background: white;
             box-shadow: 0 4px 20px rgba(139,38,53,0.1);
         }
-    
+   
         .btn {
             font-family: 'Outfit', sans-serif;
             font-weight: 500;
@@ -128,18 +142,18 @@
             font-size: 15px;
             letter-spacing: 0.3px;
         }
-    
+   
         .btn-primary {
             background: linear-gradient(135deg, var(--burgundy) 0%, #A63446 100%);
             color: white;
             box-shadow: 0 4px 16px rgba(139,38,53,0.3);
         }
-    
+   
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 24px rgba(139,38,53,0.4);
         }
-    
+   
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -154,12 +168,12 @@
             transition: opacity 0.3s ease;
             padding: 20px;
         }
-    
+   
         .modal-overlay.active {
             opacity: 1;
             pointer-events: all;
         }
-    
+   
         .modal-content {
             background: white;
             border-radius: 24px;
@@ -170,45 +184,56 @@
             transition: transform 0.3s ease;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-    
+   
         .modal-overlay.active .modal-content {
             transform: scale(1);
         }
-    
+   
         .heart-icon {
             display: inline-block;
             color: var(--burgundy);
             animation: heartbeat 1.5s ease-in-out infinite;
         }
-    
+   
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
-    
+   
         ::-webkit-scrollbar-track {
             background: rgba(0,0,0,0.05);
             border-radius: 10px;
         }
-    
+   
         ::-webkit-scrollbar-thumb {
             background: var(--rose);
             border-radius: 10px;
         }
-    
+   
         ::-webkit-scrollbar-thumb:hover {
             background: var(--burgundy);
         }
-    
+   
         @media (max-width: 768px) {
             .modal-content { padding: 30px 24px; }
             .tab-btn { padding: 16px 20px; font-size: 15px; }
+        }
+
+        .animate-shake {
+            animation: shake 0.5s;
+        }
+
+        .no-copy {
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
         }
     </style>
 </head>
 <body>
     <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-    
+   
         <header class="max-w-4xl mx-auto text-center mb-12 fade-in">
             <div class="mb-6">
                 <span class="heart-icon text-6xl">♥</span>
@@ -220,18 +245,18 @@
                 Who needs plain text when your messages can say ‘I love you’ a thousand times? Every letter becomes a love note, and your chats have never been this romantic. This Valentine’s Day, transform your messages into a thousand ‘I love yous’.
             </p>
         </header>
-    
+   
         <div class="max-w-4xl mx-auto fade-in delay-1">
-        
+       
             <div class="tab-container">
                 <div class="tab-buttons">
                     <button class="tab-btn active" data-tab="encrypt" onclick="switchTab('encrypt')">Love-ify</button>
                     <button class="tab-btn" data-tab="decrypt" onclick="switchTab('decrypt')">De-Love-ify</button>
                 </div>
             </div>
-        
+       
             <div class="glass-card p-6 sm:p-8">
-            
+           
                 <!-- Love-ify Tab -->
                 <div id="encryptTab" class="tab-content active">
                     <div class="space-y-4">
@@ -245,15 +270,12 @@
                                 class="min-h-[140px]"
                             ></textarea>
                         </div>
-                    
+                   
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-sm font-medium text-gray-700">Love-ified Output</label>
                                 <div class="flex gap-4">
-                                    <button onclick="copyEncrypted()" class="text-sm hover:underline" style="color: var(--burgundy);">
-                                        Copy
-                                    </button>
-                                    <button onclick="generateShareableLink()" class="text-sm hover:underline" style="color: var(--burgundy);">
+                                    <button id="shareBtn" onclick="generateShareableLink()" class="text-sm hover:underline" style="color: var(--burgundy);">
                                         Share
                                     </button>
                                 </div>
@@ -263,12 +285,15 @@
                                 rows="7"
                                 readonly
                                 placeholder="Your love-ified message will appear here..."
-                                class="min-h-[180px] bg-gray-50 cursor-text"
+                                class="min-h-[180px] bg-gray-50 cursor-text no-copy"
+                                oncopy="return false"
+                                oncut="return false"
+                                oncontextmenu="return false"
                             ></textarea>
                         </div>
                     </div>
                 </div>
-            
+           
                 <!-- De-Love-ify Tab -->
                 <div id="decryptTab" class="tab-content">
                     <div class="space-y-4">
@@ -282,29 +307,29 @@
                                 class="min-h-[180px]"
                             ></textarea>
                         </div>
-                    
+                   
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-sm font-medium text-gray-700">Original Message</label>
-                                <button onclick="copyDecrypted()" class="text-sm hover:underline" style="color: var(--burgundy);">
-                                    Copy
-                                </button>
                             </div>
                             <textarea
                                 id="decrypted"
                                 rows="5"
                                 readonly
                                 placeholder="De-love-ified (original) message will appear here..."
-                                class="min-h-[140px] bg-gray-50 cursor-text"
+                                class="min-h-[140px] bg-gray-50 cursor-text no-copy"
+                                oncopy="return false"
+                                oncut="return false"
+                                oncontextmenu="return false"
                             ></textarea>
                         </div>
                     </div>
                 </div>
-            
+           
             </div>
-        
+       
         </div>
-    
+   
         <footer class="max-w-4xl mx-auto mt-16 text-center fade-in delay-2">
             <button onclick="showCredits()" class="text-sm text-[#90313E] hover:text-burgundy transition-colors duration-300" style="--burgundy: #8B2635;">
                 View Credits
@@ -313,7 +338,7 @@
                 © 2026 Valentine Encoder
             </p>
         </footer>
-    
+   
     </div>
     <!-- Credits Modal -->
     <div id="creditsModal" class="modal-overlay" onclick="closeModal('creditsModal')">
@@ -327,7 +352,7 @@
                         Visit GitHub
                     </a>
                 </div>
-            
+           
                 <div class="p-4 bg-gray-50 rounded-xl">
                     <h3 class="font-semibold mb-1" style="color: var(--burgundy);">Grok</h3>
                     <p class="text-sm text-gray-600 mb-2">Coding Implementation</p>
@@ -335,7 +360,7 @@
                         Visit Grok
                     </a>
                 </div>
-            
+           
                 <div class="p-4 bg-gray-50 rounded-xl">
                     <h3 class="font-semibold mb-1" style="color: var(--burgundy);">Claude Sonnet 4.5</h3>
                     <p class="text-sm text-gray-600 mb-2">UI Design</p>
@@ -352,7 +377,6 @@
         try {
             mappings = JSON.parse(localStorage.getItem('valentineMappings') || '{}');
         } catch (e) {}
-
         function simpleHash(str) {
             let hash = 0;
             for (let i = 0; i < str.length; i++) {
@@ -362,7 +386,6 @@
             }
             return hash >>> 0;
         }
-
         function generateShortID(text) {
             const words = text.trim().split(/\s+/).filter(w => w);
             let initials = words.map(w => w[0] ? w[0].toUpperCase() : '').join('').slice(0, 2);
@@ -373,7 +396,6 @@
             const checkStr = checkNum.toString(36).toUpperCase().padStart(2, '0');
             return initials + lenStr + checkStr;
         }
-
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
@@ -381,35 +403,34 @@
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById(tabName + 'Tab').classList.add('active');
         }
-    
+   
         function charToBinary(char) {
             return char.charCodeAt(0).toString(2).padStart(8, '0');
         }
-    
+   
         function binaryToChar(binary) {
             return String.fromCharCode(parseInt(binary, 2));
         }
-    
+   
         function encodeBlockToILoveYou(binary8) {
             const letters = ['i','l','o','v','e','y','o','u'];
             let result = '';
-        
+       
             for (let i = 0; i < 8; i++) {
                 const bit = binary8.charAt(i);
                 const letter = letters[i];
                 result += (bit === '0') ? letter.toUpperCase() : letter.toLowerCase();
             }
-        
+       
             return result.charAt(0) + ' ' + result.substr(1,4) + ' ' + result.substr(5);
         }
-    
+   
         function encrypt() {
             const plaintext = document.getElementById('plaintext').value.trim();
             if (!plaintext) {
                 document.getElementById('encrypted').value = '';
                 return;
             }
-
             let shortId = Object.keys(mappings).find(key => mappings[key] === plaintext);
             if (!shortId) {
                 shortId = generateShortID(plaintext);
@@ -422,32 +443,39 @@
                 mappings[shortId] = plaintext;
                 localStorage.setItem('valentineMappings', JSON.stringify(mappings));
             }
-
             const blocks = [];
             for (let char of shortId) {
                 const binary = charToBinary(char);
                 blocks.push(encodeBlockToILoveYou(binary));
             }
-        
+       
             document.getElementById('encrypted').value = blocks.join('\n');
+
+            if (document.getElementById('encrypted').value) {
+                const shareBtn = document.getElementById('shareBtn');
+                shareBtn.classList.add('animate-shake');
+                setTimeout(() => {
+                    shareBtn.classList.remove('animate-shake');
+                }, 500);
+            }
         }
-    
+   
         function decrypt() {
             const input = document.getElementById('encryptedInput').value.trim();
             if (!input) {
                 document.getElementById('decrypted').value = '';
                 return;
             }
-        
+       
             try {
                 const cased = input.replace(/\s/g, '');
                 if (cased.length % 8 !== 0) throw new Error('Invalid length');
-            
+           
                 const lower = cased.toLowerCase();
                 for (let i = 0; i < lower.length; i += 8) {
                     if (lower.substr(i,8) !== 'iloveyou') throw new Error('Invalid pattern');
                 }
-            
+           
                 let result = '';
                 for (let i = 0; i < cased.length; i += 8) {
                     const chunk = cased.substr(i,8);
@@ -457,7 +485,6 @@
                     }
                     result += binaryToChar(bin);
                 }
-
                 const id = result;
                 const original = mappings[id];
                 if (original) {
@@ -469,38 +496,24 @@
                 document.getElementById('decrypted').value = '';
             }
         }
-    
-        function copyEncrypted() {
-            const output = document.getElementById('encrypted').value.trim();
-            if (!output) {
-                showToast('Nothing to copy!');
+   
+        async function generateShareableLink() {
+            const plaintext = document.getElementById('plaintext').value.trim();
+            if (!plaintext) {
+                showToast('Nothing to share!');
                 return;
             }
-            const toCopy = output + '\n\nDe-Love-ify here: https://valentine-encoder.vercel.app/';
-            navigator.clipboard.writeText(toCopy);
-            showToast('Love-ified message copied!');
-        }
-    
-        function copyDecrypted() {
-            const el = document.getElementById('decrypted');
-            el.select();
-            document.execCommand('copy');
-            showToast('Original message copied!');
-        }
-    
-        async function generateShareableLink() {
             const output = document.getElementById('encrypted').value.trim();
             if (!output) {
                 showToast('Nothing to share!');
                 return;
             }
-
-            const compressed = LZString.compressToEncodedURIComponent(output);
-            const shareUrl = window.location.origin + window.location.pathname + '#m=' + compressed;
-
+            const compressed_encoded = LZString.compressToEncodedURIComponent(output);
+            const compressed_plain = LZString.compressToEncodedURIComponent(plaintext);
+            const shareUrl = window.location.origin + window.location.pathname + '#e=' + compressed_encoded + '&m=' + compressed_plain;
             let finalUrl = shareUrl;
             try {
-                const response = await fetch('http://tinyurl.com/api-create.php?url=' + encodeURIComponent(shareUrl));
+                const response = await fetch('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(shareUrl));
                 if (response.ok) {
                     finalUrl = await response.text();
                 } else {
@@ -509,9 +522,7 @@
             } catch (err) {
                 console.error('Shortening failed:', err);
             }
-
             const shareText = 'Check out this love-ified message! ' + finalUrl;
-
             if (navigator.share) {
                 try {
                     await navigator.share({
@@ -530,31 +541,54 @@
                 showToast(finalUrl === shareUrl ? 'Shareable link copied (shortening failed)' : 'Short link copied!');
             }
         }
-    
+   
         function loadFromUrl() {
             const hash = window.location.hash;
             if (!hash) return;
-
             const params = new URLSearchParams(hash.slice(1));
-            const msg = params.get('m');
-            if (msg) {
-                const decoded = LZString.decompressFromEncodedURIComponent(msg);
-                if (decoded) {
-                    document.getElementById('encryptedInput').value = decoded;
-                    decrypt();
-                    switchTab('decrypt');
+            const compressed_encoded = params.get('e');
+            const compressed_plain = params.get('m');
+            if (compressed_encoded && compressed_plain) {
+                const encoded = LZString.decompressFromEncodedURIComponent(compressed_encoded);
+                const plain = LZString.decompressFromEncodedURIComponent(compressed_plain);
+                if (encoded && plain) {
+                    try {
+                        const cased = encoded.replace(/\s/g, '');
+                        if (cased.length % 8 !== 0) throw new Error('Invalid length');
+                        const lower = cased.toLowerCase();
+                        for (let i = 0; i < lower.length; i += 8) {
+                            if (lower.substr(i,8) !== 'iloveyou') throw new Error('Invalid pattern');
+                        }
+                        let result = '';
+                        for (let i = 0; i < cased.length; i += 8) {
+                            const chunk = cased.substr(i,8);
+                            let bin = '';
+                            for (let j = 0; j < 8; j++) {
+                                bin += (chunk[j] === chunk[j].toUpperCase()) ? '0' : '1';
+                            }
+                            result += binaryToChar(bin);
+                        }
+                        const id = result;
+                        mappings[id] = plain;
+                        localStorage.setItem('valentineMappings', JSON.stringify(mappings));
+                        document.getElementById('encryptedInput').value = encoded;
+                        decrypt();
+                        switchTab('decrypt');
+                    } catch (e) {
+                        console.error('Failed to process shared link');
+                    }
                 }
             }
         }
-    
+   
         function showCredits() {
             document.getElementById('creditsModal').classList.add('active');
         }
-    
+   
         function closeModal(id) {
             document.getElementById(id).classList.remove('active');
         }
-    
+   
         function showToast(msg) {
             const t = document.createElement('div');
             t.textContent = msg;
@@ -572,11 +606,10 @@
                 setTimeout(() => t.remove(), 300);
             }, 2000);
         }
-    
+   
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') closeModal('creditsModal');
         });
-
         document.addEventListener('DOMContentLoaded', loadFromUrl);
     </script>
 </body>
