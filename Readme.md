@@ -15,7 +15,7 @@ A creative web application that encodes your messages using the phrase "I LOVE Y
 
 ## 🚀 Demo
 
-Visit the live application: [Valentine Encoder](#) *(Add your deployment URL here)*
+Visit the live application: [Valentine Encoder](https://valentine-encoder.vercel.app/)
 
 ## 📖 How It Works
 
